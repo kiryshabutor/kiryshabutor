@@ -10,11 +10,9 @@ import "fmt"
 type Stack struct {
 	Language  string
 	Backend   []string
-	Brokers   []string
-	Databases []string
-	Cloud     []string
-	DevOps    []string
-	Observe   []string
+	Data      []string
+	Infra     []string
+	Quality   []string
 }
 
 type Developer struct {
@@ -23,29 +21,27 @@ type Developer struct {
 	School string
 	City   string
 	Stack  Stack
-	Next   []string
+	Goal   string
 }
 
 func main() {
 	me := Developer{
 		Name:   "Kiryl Butar",
-		Role:   "Go backend developer",
-		School: "BSUIR, FKSIS",
+		Role:   "Go Backend Developer Intern @ Innowise",
+		School: "BSUIR, Computer Engineering, 3rd year",
 		City:   "Minsk",
 		Stack: Stack{
-			Language:  "Go",
-			Backend:   []string{"Gin", "gRPC", "protobuf", "sqlx", "Swagger", "Zap", "testify", "mockery", "gomock", "pprof"},
-			Brokers:   []string{"Kafka", "RabbitMQ"},
-			Databases: []string{"PostgreSQL", "Redis", "MongoDB", "Elasticsearch"},
-			Cloud:     []string{"AWS (EKS, S3, Secrets Manager, CloudWatch, IAM)", "GCP (GKE, GCE, Cloud Functions)"},
-			DevOps:    []string{"Kubernetes", "Docker", "Docker Compose", "GitLab CI/CD", "GitHub Actions"},
-			Observe:   []string{"Prometheus", "Grafana", "ELK (Elasticsearch, Logstash, Kibana)"},
+			Language: "Go",
+			Backend:  []string{"REST", "gRPC", "Protobuf", "OpenAPI/Swagger", "JWT", "Microservices", "Clean Architecture"},
+			Data:     []string{"PostgreSQL", "MongoDB", "Redis", "Elasticsearch", "ClickHouse", "Kafka", "RabbitMQ"},
+			Infra:    []string{"Docker", "Kubernetes", "Kubebuilder", "Crossplane", "AWS S3/EKS/IAM/Secrets Manager", "GitLab CI/CD", "GitHub Actions"},
+			Quality:  []string{"Testify", "GoMock", "Mockery", "Prometheus", "Grafana", "OpenTelemetry", "Jaeger"},
 		},
-		Next: []string{"Kubernetes operators", "admission webhooks", "Crossplane"},
+		Goal: "highload",
 	}
 
 	for {
-		fmt.Println("ship it:", me.Stack.Language)
+		fmt.Println("outbox -> kafka -> idempotent consumer, no duplicates, no losses:", me.Goal)
 		// TODO: sleep
 	}
 }
@@ -55,73 +51,66 @@ func main() {
 
 ```mermaid
 flowchart LR
-    U([Client]) -->|REST + JWT, Swagger| API[API service<br/>Go · Gin]
-    API -->|gRPC + protobuf| SVC[Domain services<br/>Go]
-    SVC -->|transactions| PG[(PostgreSQL)]
-    SVC <-->|cache, sessions| R[(Redis)]
-    SVC -->|events| K[(Kafka)]
-    K --> W[Workers<br/>Go]
-    SVC -->|queue| MQ[(RabbitMQ)]
-    MQ --> ING[Ingest workers<br/>Go]
-    ING --> M[(MongoDB)]
-    ING --> ES[(Elasticsearch)]
-    ES --> KB[Kibana]
-    SVC -.->|metrics| PR[Prometheus] --> GF[Grafana]
-    OP{{Operator<br/>reconcile loop}} -.->|observe, diff, act| SVC
+    U([Client]) -->|REST + JWT| GW[API Gateway<br/>Go]
+    GW -->|gRPC + protobuf| SVC[Domain services<br/>Go]
+    SVC -->|one SQL transaction:<br/>state + outbox row| PG[(PostgreSQL)]
+    PG -->|outbox relay| K[(Kafka)]
+    K -->|dedup by EventID| C[Idempotent consumers<br/>retry + backoff]
+    C -.->|poison messages| DLQ[(DLQ)]
+    C --> AN[(ClickHouse · MongoDB)]
+    SVC <-->|cache| R[(Redis)]
+    SVC -.->|metrics, traces| OBS[Prometheus · Grafana<br/>OpenTelemetry · Jaeger]
+    OP{{Kubernetes operator<br/>reconcile loop}} -.->|observe, diff, act| SVC
 
     classDef go fill:#00add8,stroke:#007d9c,color:#fff;
-    class API,SVC,W,ING,OP go;
+    class GW,SVC,C,OP go;
 ```
 
-Small services, explicit contracts, events instead of shared state. And when the platform needs to behave, I write the operator for it.
+Events that are never lost and never doubled: Transactional Outbox, idempotent consumers, retry with backoff, DLQ. Proven with a chaos test, not just claimed: services killed with SIGKILL, Kafka down for 30 s, 1000 of 1000 registrations accepted, 0 lost, 0 duplicates.
 
 ## `kubectl get projects`
 
 | NAME | STACK | WHAT IT DOES |
 |---|---|---|
-| [jobpool-operator](https://github.com/kiryshabutor/jobpool-operator) | Go · controller-runtime · webhooks | Caps concurrently running Jobs per namespace; a validating webhook allows one JobPool per namespace |
-| [workspace-factory](https://github.com/kiryshabutor/workspace-factory) | Crossplane v2 · kind | Self-service tenant workspaces across two clusters |
-| [event-driven-reminders](https://github.com/kiryshabutor/event-driven-reminders) | Go · gRPC · Kafka · Redis · JWT | Reminders as an event-driven microservice system |
-| [tcp-ingest-gateway](https://github.com/kiryshabutor/tcp-ingest-gateway) | Go · Kafka | Zero-allocation TCP gateway for binary IoT telemetry |
-| [finance-tracker-bot](https://github.com/kiryshabutor/finance-tracker-bot) | Go · Telegram | Personal finance tracker: bot plus Web App |
-| [load-balancer](https://github.com/kiryshabutor/load-balancer) | Go · sync/atomic | Round-robin balancer with reverse proxying |
-| [lru-cache-proxy](https://github.com/kiryshabutor/lru-cache-proxy) | Go | Caching proxy with O(1) LRU eviction |
-| [state-machine](https://github.com/kiryshabutor/state-machine) | Go · generics | Thread-safe FSM with lifecycle hooks |
+| [jobpool-operator](https://github.com/kiryshabutor/jobpool-operator) | Go · Kubebuilder · controller-runtime · webhooks · cert-manager | Keeps batch Jobs from overloading a namespace: a mutating webhook queues the extras, the controller runs them FIFO. A validating webhook with an optimistic lock allows exactly one JobPool per namespace |
+| [workspace-factory](https://github.com/kiryshabutor/workspace-factory) | Crossplane v2 · CEL · kind | One YAML creates a tenant workspace in the fleet cluster: namespace, ResourceQuota, Deployment. Manual drift is rolled back |
+| RideCore | Go · gRPC · Kafka · PostgreSQL · MongoDB · Redis · ClickHouse · OpenTelemetry | Study taxi platform: 7 microservices, 83% test coverage, about 3 100 RPS at p99 under 70 ms through the gateway |
+| [event-driven-reminders](https://github.com/kiryshabutor/event-driven-reminders) | Go · PostgreSQL · Redis · Kafka · gRPC | Delayed reminders across 5 services with Transactional Outbox and dedup by EventID |
+| [load-balancer](https://github.com/kiryshabutor/load-balancer) | Go · sync/atomic | HTTP balancer with lock-free round-robin and health checks |
+| [lru-cache-proxy](https://github.com/kiryshabutor/lru-cache-proxy) | Go | HTTP proxy with a thread-safe LRU cache, O(1) |
 
 ## Toolbox
 
 **Language**
 
-<img src="https://skillicons.dev/icons?i=go,cpp,java&theme=dark" alt="Go, C++, Java"/>
+<img src="https://skillicons.dev/icons?i=go&theme=dark" alt="Go"/>
 
-**Backend**: Gin · gRPC · protobuf · sqlx · Swagger · Zap · testify · mockery · gomock · pprof · kafka-go · redis-go · mongo-go · go-rabbitmq
+**Data and messaging**
 
-**Messaging**
+<img src="https://skillicons.dev/icons?i=postgres,mongodb,redis,elasticsearch,kafka,rabbitmq&theme=dark" alt="PostgreSQL, MongoDB, Redis, Elasticsearch, Kafka, RabbitMQ"/>
 
-<img src="https://skillicons.dev/icons?i=kafka,rabbitmq&theme=dark" alt="Kafka, RabbitMQ"/>
+ClickHouse
 
-**Databases**
+**Infrastructure**
 
-<img src="https://skillicons.dev/icons?i=postgres,redis,mongodb,elasticsearch&theme=dark" alt="PostgreSQL, Redis, MongoDB, Elasticsearch"/>
+<img src="https://skillicons.dev/icons?i=docker,kubernetes,aws,gitlab,githubactions&theme=dark" alt="Docker, Kubernetes, AWS, GitLab, GitHub Actions"/>
 
-**Cloud**
+Kubebuilder · Crossplane · AWS (S3, CloudFront, EKS, IAM, Secrets Manager)
 
-<img src="https://skillicons.dev/icons?i=aws,gcp&theme=dark" alt="AWS, GCP"/>
+**Testing and monitoring**
 
-`AWS`: EKS · S3 · Secrets Manager · CloudWatch · IAM &nbsp;|&nbsp; `GCP`: GKE · GCE · Load Balancing · Secret Manager · Cloud Functions
+<img src="https://skillicons.dev/icons?i=prometheus,grafana&theme=dark" alt="Prometheus, Grafana"/>
 
-**DevOps**
+Testify · GoMock · Mockery · OpenTelemetry · Jaeger
 
-<img src="https://skillicons.dev/icons?i=kubernetes,docker,gitlab,githubactions,git,linux&theme=dark" alt="Kubernetes, Docker, GitLab, GitHub Actions, Git, Linux"/>
+**Tools**
 
-Docker Compose · GitLab CI/CD · Crossplane · kind
+<img src="https://skillicons.dev/icons?i=git,linux,postman&theme=dark" alt="Git, Linux, Postman"/>
 
-**Observability**
+Claude Code · Codex · Cursor
 
-<img src="https://skillicons.dev/icons?i=prometheus,grafana,elasticsearch&theme=dark" alt="Prometheus, Grafana, Elasticsearch"/>
-
-Prometheus · Grafana · CloudWatch · ELK (Elasticsearch, Logstash, Kibana)
+---
 
 <p align="center">
-  <sub>Currently reading: <code>kubernetes/kubernetes</code> source, one controller at a time.</sub>
+  <sub>Telegram: <a href="https://t.me/kiryldev">@kiryldev</a> · English B2 · open to highload backend roles</sub>
 </p>
