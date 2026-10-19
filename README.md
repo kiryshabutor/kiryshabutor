@@ -1,71 +1,79 @@
-![Header](https://capsule-render.vercel.app/api?type=waving&color=0:00263a,100:00add8&height=200&section=header&text=Hey%20there%2C%20I'm%20Kiryl&fontSize=55&fontColor=ffffff&fontAlignY=40&animation=fadeIn)
+<p align="center">
+  <img src="assets/banner.svg" alt="whoami: Kiryl Butar, Go backend developer" width="100%"/>
+</p>
 
-<h1 align="center">Welcome to my GitHub</h1>
+```go
+package main
 
-<h3 align="center">
-  I'm <span style="color:#00add8;">Kiryl Butar</span> — a Go backend developer and student at <strong>BSUIR</strong>, Minsk.
-</h3>
+import "fmt"
+
+type Developer struct {
+	Name     string
+	Role     string
+	School   string
+	City     string
+	Loves    []string
+	Learning []string
+}
+
+func main() {
+	me := Developer{
+		Name:   "Kiryl Butar",
+		Role:   "Go backend developer",
+		School: "BSUIR, FKSIS",
+		City:   "Minsk",
+		Loves: []string{
+			"concurrency", "gRPC", "Kafka", "Redis",
+			"zero-allocation hot paths", "boring, reliable services",
+		},
+		Learning: []string{
+			"Kubernetes operators", "admission webhooks", "Crossplane",
+		},
+	}
+
+	for {
+		fmt.Println("ship it:", me.Loves[0])
+		// TODO: sleep
+	}
+}
+```
+
+## How I like to build things
+
+```mermaid
+flowchart LR
+    U([Client]) -->|REST + JWT| API[API service<br/>Go]
+    API -->|gRPC| SVC[Domain services<br/>Go]
+    SVC -->|events| K[(Kafka)]
+    K --> W[Workers<br/>Go]
+    SVC <-->|cache, rate limits| R[(Redis)]
+    OP{{Operator<br/>reconcile loop}} -.->|observe, diff, act| SVC
+
+    classDef go fill:#00add8,stroke:#007d9c,color:#fff;
+    class API,SVC,W,OP go;
+```
+
+Small services, explicit contracts, events instead of shared state. And when the platform needs to behave, I write the operator for it.
+
+## `kubectl get projects`
+
+| NAME | STACK | WHAT IT DOES |
+|---|---|---|
+| [jobpool-operator](https://github.com/kiryshabutor/jobpool-operator) | Go · controller-runtime · webhooks | Caps concurrently running Jobs per namespace; a validating webhook allows one JobPool per namespace |
+| [workspace-factory](https://github.com/kiryshabutor/workspace-factory) | Crossplane v2 · kind | Self-service tenant workspaces across two clusters |
+| [event-driven-reminders](https://github.com/kiryshabutor/event-driven-reminders) | Go · gRPC · Kafka · Redis · JWT | Reminders as an event-driven microservice system |
+| [tcp-ingest-gateway](https://github.com/kiryshabutor/tcp-ingest-gateway) | Go · Kafka | Zero-allocation TCP gateway for binary IoT telemetry |
+| [finance-tracker-bot](https://github.com/kiryshabutor/finance-tracker-bot) | Go · Telegram | Personal finance tracker: bot plus Web App |
+| [load-balancer](https://github.com/kiryshabutor/load-balancer) | Go · sync/atomic | Round-robin balancer with reverse proxying |
+| [lru-cache-proxy](https://github.com/kiryshabutor/lru-cache-proxy) | Go | Caching proxy with O(1) LRU eviction |
+| [state-machine](https://github.com/kiryshabutor/state-machine) | Go · generics | Thread-safe FSM with lifecycle hooks |
+
+## Toolbox
+
+<p>
+  <img src="https://skillicons.dev/icons?i=go,kafka,redis,docker,kubernetes,githubactions,linux,git,cpp,java&theme=dark" alt="Go, Kafka, Redis, Docker, Kubernetes, GitHub Actions, Linux, Git, C++, Java"/>
+</p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=22&pause=1200&color=00ADD8&center=true&vCenter=true&width=750&lines=Go+Backend+Developer;Microservices+%7C+gRPC+%7C+Kafka+%7C+Redis;Kubernetes+operators+and+platform+tooling;Concurrency%2C+performance%2C+clean+architecture" />
+  <sub>Currently reading: <code>kubernetes/kubernetes</code> source, one controller at a time.</sub>
 </p>
-
----
-
-### 🧩 About Me
-
-- 🎓 Studying at **Belarusian State University of Informatics and Radioelectronics (BSUIR)**, FKSIS.
-- 🐹 I write **Go** every day: REST and gRPC services, concurrent systems, CLI tools.
-- 📨 Build event-driven microservices with **Kafka**, **Redis** and **JWT** authentication.
-- ☸️ Explore the platform side: **Kubernetes operators** (controller-runtime, admission webhooks) and **Crossplane** compositions.
-- ⚡ Interested in performance: zero-allocation hot paths, lock-free counters, O(1) algorithms.
-- 🧰 Also comfortable with **C++** and **Java** from university work.
-
----
-
-### 📌 Selected projects
-
-| Project | What it is |
-|---|---|
-| [jobpool-operator](https://github.com/kiryshabutor/jobpool-operator) | Kubernetes operator that limits concurrently running Jobs per namespace, with a validating webhook |
-| [workspace-factory](https://github.com/kiryshabutor/workspace-factory) | Crossplane v2 self-service tenant workspaces on two kind clusters |
-| [event-driven-reminders](https://github.com/kiryshabutor/event-driven-reminders) | Microservices with JWT, gRPC, Kafka and Redis |
-| [tcp-ingest-gateway](https://github.com/kiryshabutor/tcp-ingest-gateway) | Zero-allocation TCP gateway for binary IoT telemetry, Kafka integration |
-| [finance-tracker-bot](https://github.com/kiryshabutor/finance-tracker-bot) | Personal finance tracker: Telegram bot and Web App |
-| [load-balancer](https://github.com/kiryshabutor/load-balancer) | Round-robin load balancer with atomic counters and reverse proxying |
-| [lru-cache-proxy](https://github.com/kiryshabutor/lru-cache-proxy) | Caching proxy with O(1) LRU eviction and file persistence |
-
----
-
-## 🐹 Languages
-
-<p align="left">
-  <img src="https://skillicons.dev/icons?i=go,cpp,java&theme=dark" alt="Go, C++, Java" height="50"/>
-</p>
-
-## ⚙️ Technologies
-
-<p align="left">
-  <img src="https://skillicons.dev/icons?i=kafka,redis,docker,kubernetes,githubactions,linux,git&theme=dark" alt="Kafka, Redis, Docker, Kubernetes, GitHub Actions, Linux, Git" height="50"/>
-</p>
-
-- **Services**: REST, gRPC, JWT auth, Telegram Bot API.
-- **Messaging and cache**: Kafka, Redis.
-- **Platform**: Kubernetes operators (kubebuilder), admission webhooks, Crossplane, kind.
-- **Delivery**: Docker, Make, GitHub Actions.
-
----
-
-### 📈 GitHub Statistics
-
-<div align="center">
-  <img height="180" src="https://github-readme-stats.vercel.app/api?username=kiryshabutor&show_icons=true&theme=transparent&title_color=00ADD8&icon_color=00ADD8&text_color=808080&border_color=00ADD8" />
-  <img height="180" src="https://github-readme-stats.vercel.app/api/top-langs?username=kiryshabutor&layout=compact&theme=transparent&title_color=00ADD8&text_color=808080&border_color=00ADD8&langs_count=6" />
-</div>
-
----
-
-## Contact
-- GitHub: https://github.com/kiryshabutor
-
-Feel free to connect or collaborate!

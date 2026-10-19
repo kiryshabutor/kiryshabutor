@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="260" viewBox="0 0 900 260" role="img" aria-label="Terminal: whoami, kiryl-butar, go backend developer">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1e2d"/>
+      <stop offset="1" stop-color="#06121c"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#00add8"/>
+      <stop offset="1" stop-color="#5dc9e2"/>
+    </linearGradient>
+    <clipPath id="c1"><rect x="40" y="70" height="34" width="0"><animate attributeName="width" from="0" to="150" begin="0.4s" dur="0.7s" fill="freeze"/></rect></clipPath>
+    <clipPath id="c2"><rect x="40" y="108" height="34" width="0"><animate attributeName="width" from="0" to="460" begin="1.4s" dur="1.0s" fill="freeze"/></rect></clipPath>
+    <clipPath id="c3"><rect x="40" y="146" height="34" width="0"><animate attributeName="width" from="0" to="150" begin="2.8s" dur="0.7s" fill="freeze"/></rect></clipPath>
+    <clipPath id="c4"><rect x="40" y="184" height="34" width="0"><animate attributeName="width" from="0" to="780" begin="3.7s" dur="1.6s" fill="freeze"/></rect></clipPath>
+  </defs>
+  <style>
+    text { font-family: "Fira Code", "JetBrains Mono", "DejaVu Sans Mono", Consolas, monospace; font-size: 22px; }
+    .p { fill: #00add8; }
+    .t { fill: #e6f1f7; }
+    .o { fill: #8fd6ea; }
+    .d { fill: #5b7587; }
+    .cur { fill: #00add8; animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+  <rect width="900" height="260" rx="14" fill="url(#bg)"/>
+  <rect x="1" y="1" width="898" height="258" rx="13" fill="none" stroke="url(#glow)" stroke-opacity="0.55"/>
+  <rect x="0" y="0" width="900" height="38" rx="14" fill="#0e2a3d"/>
+  <rect x="0" y="24" width="900" height="14" fill="#0e2a3d"/>
+  <circle cx="24" cy="19" r="6" fill="#ff5f56"/><circle cx="46" cy="19" r="6" fill="#ffbd2e"/><circle cx="68" cy="19" r="6" fill="#27c93f"/>
+  <text x="450" y="25" text-anchor="middle" class="d" style="font-size:14px">kiryl@minsk: ~/go/src/github.com/kiryshabutor</text>
+
+  <g clip-path="url(#c1)"><text x="40" y="94"><tspan class="p">$ </tspan><tspan class="t">whoami</tspan></text></g>
+  <g clip-path="url(#c2)"><text x="40" y="132" class="o">kiryl-butar // go backend developer</text></g>
+  <g clip-path="url(#c3)"><text x="40" y="170"><tspan class="p">$ </tspan><tspan class="t">go run .</tspan></text></g>
+  <g clip-path="url(#c4)"><text x="40" y="208" class="o">grpc · kafka · redis · kubernetes · crossplane</text></g>
+  <rect class="cur" x="655" y="190" width="12" height="24" opacity="0"><animate attributeName="opacity" from="0" to="1" begin="5.4s" dur="0.01s" fill="freeze"/></rect>
+  <text x="860" y="244" text-anchor="end" class="d" style="font-size:13px">BSUIR · Minsk</text>
+</svg>
